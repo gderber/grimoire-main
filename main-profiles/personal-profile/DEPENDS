@@ -1,3 +1,0 @@
-runtime_depends xfce4-profile      &&
-runtime_depends emacs              &&
-runtime_depends keepassx
