@@ -1,0 +1,66 @@
+2016-11-16 Vlad Glagolev <stealth@sourcemage.org>
+	* DETAILS: PATCHLEVEL=1
+	* DEPENDS: added critical missing dependency -- iproute2
+
+2016-09-26 Vlad Glagolev <stealth@sourcemage.org>
+	* DETAILS: updated spell to 0.8.16
+	* 0001-do-not-use-dpkg-architecture.patch: updated
+	* 0002-sbin-ip.patch: regenerated
+
+2016-09-24 Vlad Glagolev <stealth@sourcemage.org>
+	* DETAILS: PATCHLEVEL=1
+	* INSTALL: install dummy files as another protection measure against
+	  other spells handling hook dirs
+
+2016-09-02 David C. Haley <khoralin@gmail.com>
+	* DETAILS: Updated to 0.8.13
+	  Updated SOURCE_URL
+
+2016-08-17 Ismael Luceno <ismael@sourcemage.org>
+	* INSTALL: Fixed permissions on installed documentation files
+	* DETAILS: PATCHLEVEL++
+
+2016-06-01 Eric Sandall <sandalle@sourcemage.org>
+	* DETAILS: Updated to 0.8.12
+	  WEB_SITE refreshed
+	* 0002-sbin-ip.patch: Updated for 0.8.12
+
+2016-03-08 Eric Sandall <sandalle@sourcemage.org>
+	* DETAILS: PATCHEVEL++ to fix installation
+	* 0001-do-not-use-dpkg-architecture.patch: Update to remove dpkg-architecture
+	  from Makefile
+	* 0002-sbin-ip.patch: Fix /bin/ip is actually /sbin/ip
+	  Restarting network won't function until this is applied.
+	* PRE_BUILD: Apply 0002-sbin-ip.patch
+
+2016-01-24 Thomas Orgis <sobukus@sourcemage.org>
+	* DETAILS: panic bump to 0.8.10 since 0.7.54 is unobtainable, even
+	  on mirrors
+
+2015-08-05 Florian Franzmann <siflfran@hawo.stw.uni-erlangen.de>
+	* DETAILS, BUILD, DEPENDS, INSTALL: version 0.7.54
+	* PRE_BUILD, 0001-do-not-use-dpkg-architecture.patch: remove dependency on
+	  dpkg
+
+2010-08-27 Eric Sandall <sandalle@sourcemage.org>
+	* init.d/network: Add RECOMMENDED=yes
+
+2010-05-03 Vlad Glagolev <stealth@sourcemage.org>
+	* DETAILS: updated spell to 0.6.10; quoting paths
+
+2010-01-31 Eric Sandall <sandalle@sourcemage.org>
+	* INSTALL: Just remove /sbin/ifdown if it exists before we install
+	  Fix Bug #14367
+
+2009-10-19 Treeve Jelbert <treeve@sourcemage.org>
+	* DETAILS: version 0.6.9
+
+2008-07-22 Martin Spitzbarth <m.spitzbarth@gmx.de>
+	* INSTALL: added INSTALL_ROOT
+
+2008-02-25 Ladislav Hagara <hgr@vabo.cz>
+	* init.d/network, DETAILS: added messages, PATCHLEVEL=1
+
+2008-01-30 David Kowis <dkowis@shlrm.org>
+	* DETAILS,BUILD,DEPENDS,PREPARE: Created this spell
+

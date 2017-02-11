@@ -1,0 +1,670 @@
+2017-02-07 Ismael Luceno <ismael@sourcemage.org>
+	* init.d/mountall.sh: Fixed exit status when cryptsetup isn't found
+	* DETAILS: PATCHLEVEL++
+
+2016-06-16 Ismael Luceno <ismael@sourcemage.org>
+	* DETAILS: Bumped version to 2.2.15
+	* init.d/mountall.sh: Added support for encrypted swap
+	  Improved /tmp cleanup by using find
+
+2016-05-21 Thomas Orgis <sobukus@sourcemage.org>
+	* init.d/devices: fix version logic to use future-proof `sort -V`
+	  This broke boot on a box with eudev and non-root LVM without initrd,
+	  as the version check did not know kernel 4.x .
+	  We might just drop the hotplug check, though.
+	* DETAILS: version 2.2.14
+
+2016-04-19 Eric Sandall <sandalle@sourcemage.org>
+	* init.d/devices.conf: Fix RUN_SIZE comment to match reality
+
+2016-04-09 Eric Sandall <sandalle@sourcemage.org>
+	* DETAILS: PATCHLEVEL++
+	* init.d/devices.conf: Allow setting RUN_SIZE
+	  default is 50%, so set that to keep consistency
+	  See https://lists.debian.org/debian-devel/2011/04/msg00615.html
+	  50% is too large for many systems these days, so make this configurable
+	  as I only use 1% of 1% of my RAM on /run for a server.
+	* init.d/devices: Use RUN_SIZE when mounting /run
+
+2015-03-29 Vlad Glagolev <stealth@sourcemage.org>
+	* INSTALL: don't do mount-based checks here, prevents castfs from
+	  correct unmount
+	* BUILD: check for static /dev
+
+2015-02-11 Vlad Glagolev <stealth@sourcemage.org>
+	* DEPENDS: UDEV -> DEVICE-MANAGER
+
+2013-07-27 Treeve Jelbert <treeve@sourcemage.org>
+	* DEPENDS: udev => udev
+
+2012-06-07 Sukneet Basuta <sukneet@sourcemage.org>
+	* DEPENDS: make udev check for linux 3.x more robust
+
+2012-06-06 Sukneet Basuta <sukneet@sourcemage.org>
+	* DEPENDS: fixed udev check for linux 3.x
+
+2011-07-30 Ladislav Hagara <hgr@vabo.cz>
+	* DETAILS: 2.2.13
+	* init.d/devices: updated to work with linux 3
+
+2011-06-11 Vlad Glagolev <stealth@sourcemage.org>
+	* DETAILS: 2.2.12
+	* init.d/devices: grep shouldn't be used on such low-level stage, cause
+	  on multi-partition setup (when /usr is separated from /) it becomes
+	  unaccessible -- so use /bin/findmnt from util-linux
+
+2011-05-31 Ladislav Hagara <hgr@vabo.cz>
+	* DETAILS: 2.2.11
+	* PRE_BUILD: check for CONFIG_DEVTMPFS_MOUNT removed
+	* init.d/devices: mount ramfs on /dev if devtmpfs is not used
+
+2011-05-19 Ladislav Hagara <hgr@vabo.cz>
+	* DETAILS: 2.2.10
+	* INSTALL: /run created
+	* PRE_BUILD: check for CONFIG_DEVTMPFS_MOUNT only if udev is used
+	* init.d/devices: /run mount moved from start_udev into start
+
+2011-05-17 Ladislav Hagara <hgr@vabo.cz>
+	* DETAILS: 2.2.9
+	* PRE_BUILD: check for CONFIG_DEVTMPFS_MOUNT added
+	* init.d/devices: ramfs on /dev removed, devtmpfs required
+
+2011-04-23 Ladislav Hagara <hgr@vabo.cz>
+	* DETAILS: 2.2.8
+	* init.d/devices: /run mounted for udev
+
+2011-03-04 Ismael Luceno <ismael@sourcemage.org>
+	* init.d/devices: Removed duplicated code
+
+2010-09-28 Vlad Glagolev <stealth@sourcemage.org>
+	* init.d/mountroot.sh: don't write mdadm pid to non-existent partition
+	  (if /var exists on a separate one)
+	* DETAILS: 2.2.7
+
+2010-08-31 David C. Haley <khoralin@gmail.com>
+	* init.d/mountall.sh: checkfs() fixed removal of /fastboot
+
+2009-09-08 Arjan Bouter <abouter@sourcemage.org>
+	* PROVIDES: added, provide INITSCRIPTS
+
+2009-05-02 Andraž "ruskie" Levstik <ruskie+f03a580f@codemages.net>
+	* init.d/devices: made it non-sh, bug #13702
+	* init.d/mountall.sh: made it non-sh, bug #13702
+	* init.d/mountroot.sh: made it non-sh, bug #13702
+
+2009-02-27 Andraž "ruskie" Levstik <ruskie@mages.ath.cx>
+	* init.d/devices: added static_udev option
+	* init.d/devices.conf: added static_udev option
+	* CONFIGURE: added static_udev option, use the correct function
+	  to check for kernel options, lines should be 80 chars or less
+	* DETAILS: 2.2.6
+
+2008-12-08 Jaka Kranjc <lynxlynxlynx@sourcemage.org>
+	* DETAILS: define SOURCE_DIRECTORY
+
+2008-10-14 Vlad Glagolev <stealth@sourcemage.org>
+	* INSTALL: install MAKEDEV to /sbin
+	* DETAILS: version bump to 2.2.5
+
+2008-08-28 Vlad Glagolev <stealth@sourcemage.org>
+	* init.d/mountall.sh: fixed a bug about removing .* files/dirs
+
+2008-08-22 Jaka Kranjc <lynxlynxlynx@sourcemage.org>
+	* mountroot.sh: don't unconditionally overwrite the mtab and do it
+	  properly #14665
+
+2008-07-24 Vlad Glagolev <stealth@sourcemage.org>
+	* DETAILS: 2.2.4, added new facility crypt_fs, for the things like
+	  loop-aes, ecryptfs, dm-crypt, etc.
+	* init.d/facilities.conf: added empty crypt_fs facility line
+	* init.d/mountall.sh: use new crypt_fs facility, it needs to be done
+	  before mounting all partitions
+	* init.d/smgl-default-crypt-fs: empty crypt_fs provider for no encrypted
+	  fs usage
+	* BUILD: use `install -d', quoting the paths!
+
+2008-07-14 Vlad Glagolev <stealth@sourcemage.org>
+	* DETAILS: bump version to 2.2.3 for loop-AES' losetup detection in
+	  mountall.sh (since loop-AES considered as quite stable for a long)
+	  and the last changes like domainname and luks support
+	* FINAL: removed useless spaces
+	* init.d/mountroot.sh: removing anything after just read-only mounted
+	  partition doesn't make any sense (error notified in 2.6.26)
+
+2008-06-21 Vlad Glagolev <stealth@sourcemage.org>
+	* DETAILS: don't do useless doc'ing, fixed short desc, corrected SMGL
+
+2008-05-30 Vlad Glagolev <stealth@sourcemage.org>
+	* init.d/mountall.sh: added losetup to WANTS (if loop-AES is installed
+	  all configured partitions will be linked with the loop devices)
+
+2008-01-31 Jaka Kranjc <lynxlynxlynx@sourcemage.org>
+	* smgl_functions: use the builtin echo if the output is not a tty #13090
+
+2007-11-20 Vlad Glagolev <stealth@sourcemage.org>
+	* init.d/hostname.sh: added execution of `domainname'
+	  (if exists /etc/defaultdomain containing the domain name)
+
+2007-09-26 David Brown <dmlb2000@gmail.com>
+	* mountall.sh: added luks partition additions for encrypted partitions 
+	* DETAILS: updated patchlevel
+
+2007-09-19 Arwed v. Merkatz <v.merkatz@gmx.net>
+	* files/rc: fix init script execution if a script exists in more than
+	  one runlevel
+	* DETAILS: PATCHLEVEL++
+
+2007-08-08 Jaka Kranjc <lynxlynxlynx@sourcemage.org>
+	* BUILD: fix the workaround for #13363
+
+2007-06-02 Jaka Kranjc <lynxlynxlynx@sourcemage.org>
+	* files/smgl_functions: remove grep usage #10439
+
+2007-05-23 Jaka Kranjc <lynxlynxlynx@sourcemage.org>
+	* BUILD, FINAL: added temporary file workaround for #13363
+
+2007-04-14 Jaka Kranjc <lynxlynxlynx@sourcemage.org>
+	* mountall.sh: add /proc to mtab, take two #7311
+
+2007-03-05 Juuso Alasuutari <iuso@sourcemage.org>
+	* DEPENDS: Fixed error in kernel version checking that in some
+	  cases erroneously caused udev-old to be pulled in.
+
+2007-02-03 Thomas Orgis <sobukus@sourcemage.org>
+	* DETAILS, files/smgl_init: bug 13015 give message when refraining
+	  from running init script that is not configured as provider,
+	  version 2.2.1
+	* DETAILS, files/smgl_telinit: 13016 adding the
+	  fault tolerance when disabling an init script
+	  this is version 2.2.2 for keeping consistency	
+
+2007-01-30 Juuso Alasuutari <iuso@sourcemage.org>
+	* DEPENDS: Depend on udev-old instead of udev only when absolutely
+	  necessary. Cleaned the code up.
+
+2007-01-18 Jeremy Blosser <jblosser-smgl@firinn.org>
+	* init.d/devices: Centralize /proc mounting.
+	* init.d{mountroot.sh,mountall.sh}: Try to not break systems that use
+	  an initrd and root LVM (bug 9177).
+	* DETAILS: PATCHLEVEL++.
+
+2007-01-10 Jaka Kranjc <lynxlynxlynx@sourcemage.org>
+	* CONFIGURE: added check before sourcing devices
+
+2007-01-08 Jaka Kranjc <lynxlynxlynx@sourcemage.org>
+	* CONFIGURE: fix #9772, restore the DEVICE settings for the second cast
+	  added missing &&
+
+2006-12-19 Andraž "ruskie" Levstik <ruskie@mages.ath.cx>
+	* init.d/mountall.sh: added no9p to not mount 9p resource sharers
+	* DETAILS: patchlevel++
+
+2006-11-19 Thomas Orgis <sobukus@sourcemage.org>
+	* files/smgl_functions: added setting of $base to statusproc - it is
+	  nice to know for which process name the status is
+	* files/smgl_functions: getpids now results in $pidlist without newlines,
+	  makes statusproc a lot nicer when there are multiple PIDs; other existing
+	  uses are the same as statusproc or consist of either test -n or test -z,
+	  thus are not affected 
+	* DETAILS: patchlevel increment (why not version number...?)
+
+2006-11-02 Thomas Orgis <sobukus@sourcemage.org>
+	* init.d/mountall.sh: device mapper may simply fail because no kernel
+	  support, so don't bother for error code (spurious red on bood)
+
+2006-10-29 Thomas Orgis <sobukus@sourcemage.org>
+	* init.d/mountall.sh: add discovery of device mapper
+	  nodes (p.ex. crypto swap set up in initramfs)
+
+2006-10-26 Jaka Kranjc <lynxlynxlynx@sourcemage.org>
+	* INSTALL: use TRACK_ROOT when linking #9163
+
+2006-09-23 Flavien Bridault <vlaaad@sourcemage.org>
+	* DEPENDS: Check which udev spell we should cast according to the 
+	  kernel version
+	* DETAILS: PATCHLEVEL++
+
+2006-09-21 Juuso Alasuutari <iuso@sourcemage.org>
+	* DETAILS: [automated] Removed BUILD_API=2.
+
+2006-09-05 Thomas Orgis <sobukus@sourcemage.org>
+	* CONFIGURE: changed static dev question with now hopefully
+	  unambignous / as suggested by Jaka
+
+2006-09-05 Andraž "ruskie" Levstik <ruskie@mages.ath.cx>
+	* init.d/mountall.sh: if symlinks unlink them before removing
+	* DETAILS: PATCHLEVEL++, really this time
+
+2006-09-04 Thomas Orgis <sobukus@sourcemage.org>
+	* DETAILS: increased PATCHLEVEL for the last changes
+
+2006-09-03 Thomas Orgis <sobukus@sourcemage.org>
+	* CONFIGURE, FINAL, INSTALL, PRE_BUILD: several fixes accoring
+	  to bug #12964, namely:
+	   - more consistend INSTALL_ROOT
+	   - better backup routine
+	   - adding needed groups, better static dev creation (early asking)
+	   - first install marker by variable, not file
+
+2006-07-11 Juuso Alasuutari <iuso@sourcemage.org>
+	* PREPARE: Changed exit 1's to return 1's, bug #12838.
+
+2006-07-06 Juuso Alasuutari <iuso@sourcemage.org>
+	* init.d/keymap.sh, init.d/keymap.conf: Deleted, moved to kbd 
+	  and console-tools spells.
+	* DETAILS: PATCHLEVEL++
+
+2006-06-17 Flavien Bridault <vlaaad@sourcemage.org>
+	* init.d/devices: removed udevstart for kernels > 2.6.14, coldplug is
+	  now working well
+	* DETAILS:  PATCHLEVEL++
+
+2006-06-09 Eric Sandall <sandalle@sourcemage.org>
+	* init.d/mountall.sh: cifs is also a network filesystem, don't mount it here
+	  Corrected comment to refer to mountnetwork instead of mountnfs
+
+2006-04-28 Jeremy Blosser <jblosser-smgl@firinn.org>
+	* UP_TRIGGERS: Make sure $INSTALL_ROOT/etc/sysconfig/facilities exists
+	  before grepping it.
+
+2006-04-22 Jeremy Blosser <jblosser-smgl@firinn.org>
+	* PREPARE: Make sure $INSTALL_ROOT/etc/sysconfig/facilities exists
+	  before grepping it.
+
+2006-04-10 Jeremy Blosser <jblosser-smgl@firinn.org>
+	* files/smgl_init: Make it so WANTS are actually optional.
+	* DETAILS: PATCHLEVEL++
+
+2006-03-12 Karsten Behrmann <BearPerson@sourcemage.org>
+	* DETAILS: (automated) Add KEYWORDS
+
+2006-03-11 Jeremy Blosser <jblosser-smgl@firinn.org>
+	* WIP: Removed, this is going to test.
+
+2006-03-07 Juuso Alasuutari <juuso.alasuutari@tamperelainen.org>
+	* DETAILS: Updated PATCHLEVEL to 9
+	  Removed UPDATED
+	* init.d/keymap.sh: Split include map loading into separate 
+	  scripts for kbd and console-tools due to compatibility issues 
+	  between their map sets.
+
+2006-03-06 Juuso Alasuutari <juuso.alasuutari@tamperelainen.org>
+	* init.d/keymap.sh: Fixed include map loading to understand 
+	  entries without .inc suffix. Fixed keymap loading to run only 
+	  when $KEYMAP is actually provided; would sit and meditate 
+	  otherwise (at least kbd's loadkeys would).
+
+2006-03-05 Juuso Alasuutari <juuso.alasuutari@tamperelainen.org>
+	* init.d/keymap.sh, keymap.conf: removed ENABLE_EURO, replaced
+	  with INCLUDEMAPS which is not specific to console-tools and
+	  allows any include keymaps to be loaded.
+
+2006-03-03 Juuso Alasuutari <juuso.alasuutari@tamperelainen.org>
+	* init.d/keymap.sh: font & unicode are set on all consoles
+	  listed in /etc/inittab if $TTY_NUMS has "*".
+	* init.d/keymap.conf: added comments; info about TTY_NUMS="*"
+	  and notice that TTY_NUMS needs to be set for any font/unicode
+	  changes to take effect
+
+2006-02-27 David Brown <dmlb2000@gmail.com>
+	* init.d/mountall.sh: fixed recursive_rm to not fail if nothing is there
+	* DETAILS: updated patch level
+
+2006-02-27 Jeremy Blosser <jblosser-smgl@firinn.org>
+	* init.d/files/smgl_init: Support a new WANTS variant of NEEDS syntax
+	  to allow "soft" dependencies.
+	* init.d/mountroot.sh: Split out root fs operations to a new script.
+	* init.d/mountall.sh: Reorder some things to make LVM work (bug 9177),
+	  depend on the root_fs facility and (optionally, via WANTS) the
+	  modules facility to support module-based filesystems (bug 10146),
+	  misc style cleanups.
+	* init.d/init.d/facilities.conf: Add facilities for root_fs and modules.
+	* PREPARE: Added a kludge to make sure mountroot.sh will default to
+	  being set as the default provider of root_fs.
+	* UP_TRIGGERS: Added with a trigger to make sure module-init-tools is
+	  cast when this update happens so the modules facility is provided if
+	  necessary.
+	* DETAILS: Update VERSION to 2.2.0 so we can try to track proliferation
+	  of these changes (and because it's probably about time).
+	* WIP: Added, these changes need to be tested on a few dev systems to
+	  verify they don't make things unbootable.
+
+2006-02-26 Jeremy Blosser <jblosser-smgl@firinn.org>
+	* DETAILS: increment PATCHLEVEL
+	* init.d/mountall.sh: s/rek_remove/recursive_rm/
+
+2006-02-25 Jeremy Blosser <jblosser-smgl@firinn.org>
+	* init.d/mountall.conf: fix variable name to match the one used in
+	  mountall.sh
+
+2006-02-25 Andraž "ruskie" Levstik <ruskie@mages.ath.cx>
+	* init.d/mountall.sh: fixes for bug #10509-reopened
+	* init.d/mountall.conf: config file
+
+2006-02-15 Andraž "ruskie" Levstik <ruskie@mages.ath.cx>
+	* init.d/mountall.sh: fixes for bug #10509, minor fix
+	* WIP: holding this fix back for 1 week from today so that
+	  some init scripts and spells can be fixed
+	* WIP: and removed, no longer necesary
+	* init.d/keymap.conf: One variabl was left set which broke stuff
+	* init.d/keymap.sh: Not catching one of the vars
+	* DETAILS: updated PATCHLEVEL
+
+2006-02-14 Andraž "ruskie" Levstik <ruskie@mages.ath.cx>
+	* WIP: removed
+	* init.d/keymap.conf: added UNICODE_START
+	* init.d/keymap.sh: support for starting unicode_start,
+	  minor fix thanks to Pol for catching it... good peer review
+	* DETAILS: updated PATCHLEVEL
+
+2006-02-14 Juuso Alasuutari <juuso.alasuutari@tamperelainen.org>
+	* init.d/keymap.conf: added new variable SETFONT_ARGS for 
+	  setfont support from kbd spell
+	* init.d/keymap.sh: support for both consolechars and setfont 
+	  with separate argument variables
+
+2006-02-14 Pol Vinogradov <vin.public@gmail.com>
+	* init.d/keymap.sh, init.d/keymap.conf: added posibility to set
+		CONSOLECHARS_ARGS for many consoles, not only the first one
+
+2006-01-18 Arwed v. Merkatz <v.merkatz@gmx.net>
+	* init.d/devices: re-enable udevstart for now, coldplug needs to wait
+	  for the required disc devices to come up so mountall.sh doesn't fail.
+	  Until that is the case we want udevstart to run.
+	* DETAILS: updated PATCHLEVEL
+
+2006-01-16 Arwed v. Merkatz <v.merkatz@gmx.net>
+	* init.d/devices: use 'builtin echo' to disable hotplug so it works,
+	  don't run udevstart anymore (handled by the coldplug init script
+	  from udev) on kernels >= 2.6.15
+	* DETAILS: updated PATCHLEVEL
+
+2005-12-18 David Brown <dmlb2000@gmail.com>
+	* init.d/devices: suggestions from arwed to change kernel.hotplug
+
+2005-12-18 David Brown <dmlb2000@gmail.com>
+	* init.d/devices: fix uname -r parsing (bug #10221)
+
+2005-12-17 Treeve Jelbert <treeve@sourcemage.org>
+	* init.d/devices: refine previous fix
+	  fix bug #10221
+
+2005-12-16 Treeve Jelbert <treeve@sourcemage.org>
+	* init.d/devices: change parsing of minor version
+	  fix bug #10221
+
+2005-12-12 Treeve Jelbert <treeve@sourcemage.org>
+	* init.d/devices: ensure that no hotplug multiplexer for linux >= 2.6.15
+
+2005-12-12 Treeve Jelbert <treeve@sourcemage.org>
+	* init.d/devices: don't set hotplug multiplexer for linux >= 2.6.15
+	* DETAILS: Updated UPDATED to force rebuild
+
+2005-10-12 Flavien Bridault <disk@sourcemage.org>
+	* init.d/devices: Now uses udevsend as the hotplug multiplexer, when using
+	  udev of course ;-)
+
+2005-08-29 Jeremy Blosser <jblosser-smgl@firinn.org>
+	* files/auto_init: Replace use of (/usr/bin/)grep with /bin/expr so it
+	  works before /usr is mounted.
+	* DETAILS: Updated UPDATED again to make sure people get this fix.
+
+2005-08-29 Jeremy Blosser <jblosser-smgl@firinn.org>
+	* DETAILS: Updated UPDATED to make sure init scripts can use some of
+	  these new features.
+
+2005-08-26 Sergey Lipnevich <sergey@sourcemage.org>
+	* init.d/mountall.sh: add --mknodes to vgscan call.
+
+2005-08-24 Jeremy Blosser <jblosser-smgl@firinn.org>
+	* files/auto_init: Explicitly call start and stop via bash in
+	  _restart() (bug 9412), support flexible init script functions via
+	  $FUNCS variable (bug 9413).
+	* files/smgl_init: Set default $FUNCS for above.
+	* files/smgl_functions: Implement KILLDELAY wait loop after
+	  'kill -$fallback' in killproc() (bug 9418).
+
+2005-08-18 David Brown <dmlb2000@gmail.com>
+	* init.d/devices: removed call to udevd and devfsd initscripts added
+	  for respective spells
+
+2005-08-12 Seth Woolley <seth@tautology.org>
+	* mountall.sh,init.conf: reversed {NO,}SOFTFIX default logic bug 9235
+
+2005-07-14 Seth Woolley <seth@tautology.org>
+	* mountall.sh: added -n to FIX if it's empty (thanks arwed).
+
+2005-07-08 Seth Woolley <seth@tautology.org>
+	* DETAILS: updated UPDATED and version to 2.1.5
+	* mountall.sh,init.conf: add more flexibility to fsck and
+	  enable LVM support (as per bug 9177).
+
+2005-07-01 Andrew Stitt <astitt@sourcemage.org>
+	* INSTALL: fix symlink installation, bug 9163
+
+2005-05-30 Seth Woolley <seth@tautology.org>
+	* DETAILS: updated UPDATED
+	* files/smgl_telinit: slight fixup to below commit
+
+2005-05-29 Seth Woolley <seth@tautology.org>
+	* DETAILS: updated UPDATED
+	* files/smgl_telinit: add a feature to easily install a spell's 
+	  init and xinet.d scripts.
+
+2005-04-16 Seth Woolley <seth@tautology.org>
+	* files/smgl_telinit: fix bug in echo overrides messing up sourcing sorcery
+	* files/smgl_functions: make logger work even with words that begin with -
+	* DETAILS: updated UPDATED
+
+2005-01-19 Arwed v. Merkatz <v.merkatz@gmx.net>
+	* init.d/hostname.sh, init.d/keymap.sh, init.d/single,
+	  init.d/smgl-default-remote-fs, init.d/smgl-suspend-single:
+	  set RECOMMENDED=yes so sorcery defaults to installing those scripts
+
+2005-01-07 Eric Sandall <sandalle@sourcemage.org>
+	* init.d/mountall.sh: Start mdadm for RAID if setup
+
+2004-12-27 Mathieu Lonjaret <lejatorn@sourcemage.org>
+	* INSTALL: applied rycee's patch to protect /etc/inittab from being
+	  overwritten if modified by user. (bug #7761)
+
+2004-12-10 Seth Woolley <seth@tautology.org>
+	* files/smgl_telinit: fix bug in case where script wasn't running
+	  and we want to disable.
+	* DETAILS: updated UPDATED
+
+2004-11-26 Arwed v. Merkatz <v.merkatz@gmx.net>
+	* init.d/devices: create /dev/fd symlink if devfsd isn't running for
+	  devfs configurations, bug #7691
+
+2004-09-10 Eric Schabell <eschabell@sourcemage.org>
+	* init.d/devices: applied patch for making directories in
+	  udev, bug #7318.
+
+2004-08-26 Eric Sandall <sandalle@sourcemage.org>
+	* DETAILS: Updated UPDATED
+	  Shortened SHORT
+	* init.d/keymap: Renamed to keymap.sh
+	* init.d/hostname: Renamed to hostname.sh
+	* init.d/mountall: Renamed to mountall.sh
+	* Follow LANANA (http://www.lanana.org/lsbreg/init/init.txt)
+	* FINAL: Rename the above appropriatly in case `cast -r` wasn't used
+	  keymap and hostname are not listed in /etc/sysconfig/facilities
+	  Used the wrong test (didn't need [...] around the grep)
+	  Print out message informing the user of the repair
+
+2004-08-24 Eric Sandall <sandalle@sourcemage.org>
+	* init.d/keymap.sh: Renamed to init.d/keymap
+	  Formatted to simpleinit-msb
+	* init.d/hostname.sh: Renamed to init.d/hostname
+	  Formatted to simpleinit-msb
+	* init.d/mountall.sh: Renamed to init.d/mountall
+	* DETAILS: Added BUILD_API=2
+	  Updated UPDATED to fix init.d rename (problem pointed out by p3pilot)
+	  Removed MAINTAINER
+	* BUILD: Converted to BUILD_API 2 (run only `true`)
+	* INSTALL: Added
+	  Cleaned up formatting
+	* POST_INSTALL, FINAL: POST_INSTALL renamed to FINAL
+	* FINAL: Fix /etc/sysconfig/facilities for naming
+
+2004-07-31 Seth Woolley <seth@tautology.org>
+	* files/smgl_telinit: changed head -1 to head -n 1 for POSIX
+
+2004-06-27 Eric Schabell <libs@sourcemage.org>
+	* PRE_BUILD: check and remove old z-misc.sh file, bug #5784.
+
+2004-04-09 hgg <hgreig@bigpond.net.au>
+	* init.d/devices: ln -sf, not ln -s and checck if devfs is running
+	  before trying to mount devfs
+
+2004-04-08 hgg <hgreig@bigpond.net.au>
+	* MAKEDEV: forgot to add this script
+
+2004-04-07 hgg <hgreig@bigpond.net.au> and Arwed v. Merkatz <v.merkatz@gmx.net>
+	* BUILD,init.d/mountall.sh, init.d/devices, init.d/facilities.conf:
+	  new %DEV runlevel and devices script for interoperation with udev.
+	  Safely defaults to devfs unless running 2.6 with hotplug and ramfs
+	  support.
+
+2004-02-13 Eric Sandall <sandalle@sourcemage.org>
+	* init.d/mountall.sh: Mount RAID filesystems, if needed
+
+2004-02-12 hgg <hgreig@bigpond.net.au>
+	* BUILD: correct target of symlinks
+
+2004-02-07 Robert Helgesson <rhelgesson@sourcemage.org>
+	* init.d/keymap.conf: Added ENABLE_EURO and CONSOLECHARS_ARGS options.
+	  Fixes bug #4487
+	* init.d/z-misc.sh, init.d/smgl-misc: Moved z-misc.sh to smgl-misc.
+
+2004-02-06 hgg <hgreig@bigpond.net.au>
+	* mountall.sh: only mount tmpfs mounts after the physical partitions
+	  are mounted. (bug 3597)
+
+2004-02-06 hgg <hgreig@bigpond.net.au>
+	* BUILD: install_root fixes
+	* PRE_BUILD: only if CROSS_INSTALL is off
+	* rc: add "bash" before executing an initscript so it will still start
+	  even if bootdisabled (bug #5595)
+
+2003-12-15 Robert Helgesson <rhelgesson@sourcemage.org>
+	* files/smgl_function: Don't pass on the modified echo when running a
+	  program through loadproc.
+
+2003-11-29 Arwed v. Merkatz <v.merkatz@gmx.net>
+	* CONFIGURE, POST_INSTALL: add DEVFS_ON_DEV config variable so
+	  /etc/sysconfig/devices is always changed to have the correct
+	  DEVICES setting
+
+2003-11-15 Eric Sandall <sandalle@sourcemage.org>
+	* init.d/keymap.sh: loadkeys is in /bin not /usr/bin
+	  Finally decided to get rid of that stupid error
+	* DETAILS: Updated to 2.1.3
+
+2003-11-06 Seth Woolley <seth@tautology.org>
+	* files/smgl_functions: get last bits of wc -l out and replaced
+	  with bash builtins.
+	* DETAILS: Updated and incremented to 2.1.2.
+
+2003-11-04 Seth Woolley <seth@tautology.org>
+	* init.d/hostname.sh: fix to allow coreutils hostname to work.
+	* DETAILS: Updated incremented to get this fix in so I don't see 
+	  it creeping up in the chat room again, and version to 2.1.1.
+	* HISTORY: new format, somewhat.
+
+2003-10-08 Seth Woolley <seth@tautology.org>
+	* files/smgl_functions: Fixed issue with exporting the 
+	  echo override but not its child functions, removed 
+	  init.d: prefix, made syslogging optional.
+	* files/smgl_telinit: added telinit-specific rc stuff
+	* files/rc: removed telinit-specific stuff for smgl_telinit
+	* BUILD: added smgl_telinit on install
+	* init.d/init.conf: edited for syslog option.
+
+2003-09-20 Seth Woolley <seth@tautology.org>
+	* Fixed syslog logger sometimes not there bug (I hope).
+	* DEVICES=/dev now, by default (otherwise recasting sucks).
+	* PARALLEL_INIT support (optional, default off).
+	* See /etc/sysconfig/init:PARALLEL_INIT to enable.
+	* Different script display now that supports PARALLEL_INIT.
+	* Updated to version 2.1.
+	* Really fixed my logger fix.
+	* Make sure colors don't go to logger, only screen
+
+2003-08-25 Eric Schabell <eschabell@sourcemage.org>
+	* Applied /usr mounting fix to smgl_init for rycee.
+
+2003-08-22 hgg <hgreig@bigpond.net.au>
+	* DETAILS: Update UPDATED purely for test grimoire integration.
+
+2003-08-21 hgg <hgreig@bigpond.net.au>
+	* CONFIGURE+POST_INSTALL: Fix Typo to correctly edit 
+	  /etc/securetty
+
+2003-08-19 Arwed v. Merkatz <v.merkatz@gmx.net>
+	* PREPARE: Changed the check for new init to match the one
+	  in PRE_BUILD.
+	  Added two checks to PREPARE:
+	* check for current devel sorcery (i.e. check for libinitd)
+	* check for current coreutils (i.e. check for /bin/false)
+	  If either of these checks fails, PREPARE exits with an exit
+	  code of 1 which makes sorcery abort the cast.
+	  These checks were added to make sure that the preparations for
+	  the transition to simpleinit are only made if the installed
+	  sorcery can actually handle it.
+
+2003-08-17 Seth Woolley <seth@tautology.org>
+	* init.d/mountall.sh: Added some stuff from old bootmisc script
+	* init.d/z-misc.sh: Added z-misc.sh to handle
+	  /etc/sysconfig/{bootmisc|haltmisc}
+	* Added some more telinit stuff ... not yet totally robust.
+
+2003-08-14 Seth Woolley <seth@tautology.org>
+	* Fixed calls to pidof tripping over itself.
+
+2003-08-13 Seth Woolley <seth@tautology.org>
+	* Don't need textutils installed anymore, using bash builtins
+	  instead of wc for syslog logger
+	* Fix bug #3918, halt_action=power_off instead of default, halt.
+
+2003-08-10 Robert Helgesson <rycee@home.se>
+	* files/init.conf: Added ESSENTIAL_FAIL_ACTION-option.
+	  It determines what should happen when an essential script exits
+	  with an error code.
+	* init.d/mountall.sh: Modified to only exit with error if mounting /
+	  fails.
+
+2003-08-03 Seth Woolley <seth@tautology.org>
+	* Fixed telinit <random> causing reboot
+	* Added syslog logging of init and some more telinit commands.
+
+2003-08-01 Eric Sandall <sandalle@sourcemage.org>
+	* Misspelling. :)
+
+2003-07-31 Robert Helgesson <rycee@home.se>
+	* Don't mess with /etc/sysconfig/devices unless user is
+	  converting to devfs on /dev.
+	* Start devfsd in mountall.sh instead of separate devfsd script,
+	  avoids deadlock.
+
+2003-07-30 Robert Helgesson <rycee@home.se>
+	* Cleaned up smgl_functions a bit.
+	* Added required_executable and optional_executable functions in
+	  smgl_functions.
+	* Cleaned up smgl-cleanup a bit.
+
+2003-07-30 Arwed v. Merkatz <v.merkatz@gmx.net>
+	* added smgl-default-remote-fs as default provider of remote_fs
+
+2003-07-29 Robert Helgesson <rycee@home.se>
+	* bugfix
+
+2003-07-28 Eric Schabell <eschabell@sourcemage.org>
+	* Added new simpleinit system to grimoire. Also changed
+	  BUILD script to deal with manipulation of %<files> in the
+	  form of _<files>.
+	* Bug fix to POST_INSTALL sedit lines, added $.
+
+2003-05-07 Robert Helgesson <rycee@home.se>
+	* created spell

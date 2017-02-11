@@ -1,0 +1,9 @@
+           SPELL=install-profile
+         VERSION=na
+        WEB_SITE=http://www.geoffsderber.com
+         ENTERED=20170209
+        KEYWORDS="Personalization"
+           SHORT="Spells I use"
+cat << EOF
+This installs all spells I use regularly.
+EOF

@@ -1,0 +1,52 @@
+2015-02-12 Vlad Glagolev <stealth@sourcemage.org>
+	* DEPENDS: added missing optional dependency -- readline
+	* BUILD: cleaned up
+	* PRE_BUILD: added, to apply the patch
+	* readline63.patch: added, to fix build with readline 6.3
+
+2011-10-14 Bor Kraljiƒç <pyrobor@ver.si>
+	* DETAILS: fixed long description wrap (scripted)
+
+2009-04-13 Ladislav Hagara <hgr@vabo.cz>
+	* DETAILS: SOURCE_HASH updated #15153
+
+2009-01-18 Ladislav Hagara <hgr@vabo.cz>
+	* DETAILS: 1.0.7, new SOURCE_URL, gz -> bz2, removed UPDATED
+
+2006-03-12 Karsten Behrmann <BearPerson@sourcemage.org>
+	* DETAILS: (automated) Add KEYWORDS
+
+2005-12-21 Flavien Bridault <disk@sourcemage.org>
+        * DETAILS: Updated to 1.0.5
+	* reiser4progs-plug_decl.patch: removed
+	* BUILD: removed patch applying for gcc4
+
+2005-11-29 Seth Woolley <seth@tautology.org>
+	* DETAILS: MD5 -> SHA512
+
+2005-05-27 Flavien Bridault <disk@sourcemage.org>
+	* reiser4progs-plug_decl.patch: added
+	* BUILD: Apply reiser4progs-plug_decl.patch for getting it compiling 
+	  on gcc 4.0. According to a developper, it will be no longer needed 
+	  in the next release.
+
+2005-03-12 Flavien Bridault <disk@sourcemage.org>
+	* CONFIGURE: Corrected bug #8354
+	* BUILD: Added to handle OPTS correctly
+	* DETAILS: Updated UPDATED
+
+2005-03-12 Flavien Bridault <disk@sourcemage.org>
+	* Updated to 1.0.4
+
+2005-01-27 Flavien Bridault <disk@sourcemage.org>
+	* DETAILS: Converted to BUILD_API 2
+
+2004-12-21 Flavien Bridault <disk@sourcemage.org>
+	* HISTORY: Reformated to Grimoire Guru Handbook standards
+
+2004-12-20 Thomas Houssin <Thomas.Houssin@gmail.com>
+ 	* Updated to 1.0.3, added lib-minimal option
+
+2004-10-22 Pierre-FranÁois Gomez <pf.gomez@free.fr>
+ 	* DEPENDS, DETAILS, HISTORY: new spell
+

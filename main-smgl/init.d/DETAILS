@@ -1,0 +1,13 @@
+           SPELL=init.d
+         VERSION=2.2.15
+      LICENSE[0]=GPL
+     GATHER_DOCS=off
+      PATCHLEVEL=2
+SOURCE_DIRECTORY=$BUILD_DIRECTORY/$SPELL-$VERSION
+        KEYWORDS="smgl"
+         ENTERED=20030505
+           SHORT="basic initalization system of SMGL"
+cat << EOF
+This is the basic initalization system of Source Mage GNU/Linux.
+Includes parallel initialization support.
+EOF

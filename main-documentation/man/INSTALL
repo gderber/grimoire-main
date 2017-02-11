@@ -1,0 +1,15 @@
+default_install &&
+
+if spell_ok less; then
+    sed -i "s/PAGER		\/bin\/less -is/PAGER		\/bin\/less -isR/" \
+           "$INSTALL_ROOT/usr/share/misc/man.conf"
+fi &&
+
+# compatibility (xman)
+pushd "$INSTALL_ROOT/etc" &&
+ln -sf ../usr/share/misc/man.conf man.conf &&
+popd &&
+
+if [[ $PROFILE_D_SCRIPT == y ]]; then
+    install -vm 644 "$SPELL_DIRECTORY/man.sh" "$INSTALL_ROOT/etc/profile.d"
+fi

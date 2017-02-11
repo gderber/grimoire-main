@@ -1,0 +1,18 @@
+           SPELL=usbutils
+         VERSION=008
+     SOURCE_HASH=sha512:ab1ad36467ff79ff5ab0b924620001612cae44def58c05ade01a4e58d8a4d48df61c09faba49a20497b7d6314045bbaf137b51a9f4e6b65ed0ea3bb339bf1c45
+          SOURCE=$SPELL-$VERSION.tar.xz
+#         SOURCE2=$SOURCE.sign
+   SOURCE_URL[0]=$KERNEL_URL/pub/linux/utils/usb/usbutils/$SOURCE
+#  SOURCE2_URL[0]=$SOURCE_URL.sign
+#      SOURCE_GPG=kernel.gpg:$SOURCE2:UPSTREAM_KEY
+#  SOURCE2_IGNORE=signature
+SOURCE_DIRECTORY=$BUILD_DIRECTORY/$SPELL-$VERSION
+        WEB_SITE=http://www.linux-usb.org/
+         ENTERED=20021218
+      LICENSE[0]=GPL
+        KEYWORDS="usb utils"
+           SHORT="Utilities to manage USB devices"
+cat << EOF
+USB utilities to verbose the /proc/bus/usb entries
+EOF

@@ -1,0 +1,944 @@
+. $GRIMOIRE/libaccount
+. $GRIMOIRE/libgcc
+. $GRIMOIRE/config_query_multi.function
+
+QT4DIR=$INSTALL_ROOT/opt/qt4
+QT5DIR=$INSTALL_ROOT/opt/qt5
+
+qt5_build() {
+  PATH="$QT5DIR/bin:$PATH"
+# qmake uses its own flag settings
+  QMAKE_CXXFLAGS="CXXFLAGS"
+  QMAKE_CFLAGS="CFLAGS"
+
+  export PKG_CONFIG_PATH="$QT5DIR/lib/pkgconfig"
+  qmake PREFIX=$QT5DIR LIBDIR=$QT5DIR/lib \
+    $OPTS *.pro &&
+  make
+}
+
+function qt5_cmake_build() {
+  PATH="$QT5DIR/bin/:$PATH"
+  export PKG_CONFIG_PATH="$QT5DIR/lib/pkgconfig"
+  cmake_build $QT5DIR
+}
+
+
+
+#---------------------------------------------------------------------
+## This function automatically fixes any known bad paths
+#---------------------------------------------------------------------
+function default_grimoire_post_install () {
+  real_default_sorcery_post_install && # currently a no-op
+  if [[ $STAGED_INSTALL == off ]]; then
+    return 0
+  fi &&
+  pushd TRANSL &> /dev/null &&
+  if [[ -d usr/man ]]; then
+    echo Fixing bad install path: /usr/man &&
+    mv -v usr/man usr/share
+  fi &&
+  if [[ -d usr/info ]]; then
+    echo Fixing bad install path: /usr/info &&
+    mv -v usr/info usr/share
+  fi &&
+  if [[ -d usr/local/man ]]; then
+    echo Fixing bad install path: /usr/local/man &&
+    mv -v usr/local/man usr/share
+  fi &&
+  if [[ -d usr/local/info ]]; then
+    echo Fixing bad install path: /usr/local/info &&
+    mv -v usr/local/info usr/share
+  fi &&
+  popd &> /dev/null
+}
+
+#---------------------------------------------------------------------
+## Replaces sorcerys default_pre_build with a custom version using
+## the invoke_gcc function from libgcc #10641
+#---------------------------------------------------------------------
+function default_pre_build () {
+  invoke_gcc  &&
+  real_default_pre_build
+}
+
+#---------------------------------------------------------------------
+## @return 0 if glibc was compiled with NPTL
+## @return 1 otherwise
+##
+## Detects if the current glibc includes NPTL support.
+##
+#---------------------------------------------------------------------
+function glibc_is_nptl ()
+{
+  if getconf GNU_LIBPTHREAD_VERSION | grep -q NPTL; then
+    return 0
+  fi
+  return 1
+}
+
+#---------------------------------------------------------------------
+# Runs update-desktop-database if it is installed
+#---------------------------------------------------------------------
+function update_desktop_database ()
+{
+  if test -x /usr/bin/update-desktop-database; then
+    message "${MESSAGE_COLOR}Updating application mime type database.${DEFAULT_COLOR}"
+    /usr/bin/update-desktop-database
+  fi
+}
+
+#---------------------------------------------------------------------
+## this function installs the *.desktop, start* files and qingy links
+## this function is intended to be used by spells for windowmanagers
+#---------------------------------------------------------------------
+function install_wmfiles ()
+{
+  local wm_desktopfile_dir="${INSTALL_ROOT}/usr/share/xsessions"
+  local wm_startwm_dir="${INSTALL_ROOT}/usr/bin"
+
+  # install the start* file for the windowmanager if it's not
+  # installed already
+  if [ -f ${SCRIPT_DIRECTORY}/start${SPELL} ] ; then
+    if ! [ -e ${wm_startwm}/start${SPELL} ] ; then
+      install  -m  755  ${SCRIPT_DIRECTORY}/start${SPELL}     \
+                        ${wm_startwm_dir}
+    fi
+  fi
+
+  # making sure the destination directory exists
+  if ! [ -d  ${wm_desktopfile_dir} ] ; then
+      mkdir  ${wm_desktopfile_dir}
+  fi                                                        &&
+
+  # install the windowmanagers desktop file
+  if [ -f ${SCRIPT_DIRECTORY}/${SPELL}.desktop ] ; then
+    if ! [ -e ${wm_desktopfile_dir}/${SPELL}.desktop ]; then
+      install  -m  755  ${SCRIPT_DIRECTORY}/${SPELL}.desktop   \
+                        ${wm_desktopfile_dir}
+    fi
+  fi
+}
+
+#---------------------------------------------------------------------
+## Sets the current script to run only one make job
+#---------------------------------------------------------------------
+
+function make_single ()
+{
+  JOBS_PER_HOST=0  &&
+     MAKE_NJOBS=1
+}
+
+#---------------------------------------------------------------------
+## Re-enables the normal Sorcery make (cancels single_make)
+#---------------------------------------------------------------------
+
+function make_normal ()
+{
+  source $COMPILE_CONFIG
+}
+
+#---------------------------------------------------------------------
+## @param shellname
+## @param full path to shell
+##
+## Adds a shell to /etc/shells and optionally to qingy's sessions
+#---------------------------------------------------------------------
+function install_shell ()
+{
+  local qingy_session_dir="${INSTALL_ROOT}/etc/qingy/sessions"
+
+  if [ -z "$1" ] ; then
+    message "${PROBLEM_COLOR}no shell name specified, aborting${DEFAULT_COLOR}"
+    return 1
+  fi &&
+  if [ ! -e "$2" ] ; then
+    message "${PROBLEM_COLOR} $2 isn't executable, no use adding it as a shell${DEFAULT_COLOR}"
+    return 1
+  fi &&
+
+  #installing shell into /etc/shells
+  message "installing $1 into /etc/shells"
+  if ! ( grep -q "^${2}$" ${INSTALL_ROOT}/etc/shells ) ; then
+    echo "$2" >> ${INSTALL_ROOT}/etc/shells
+  fi || return 1
+
+  #installing shell into qingy's session dir if it's installed
+  if ( spell_ok qingy ) && ! [ -f ${qingy_session_dir}/$1 ] ; then
+    message "installing $1 into $qingy_session_dir"
+    echo "$2" > ${qingy_session_dir}/$1 &&
+    chmod 0755 ${qingy_session_dir}/$1
+  fi
+}
+
+#---------------------------------------------------------------------
+## @param shellname
+## @param full path to shell
+##
+## Removes a shell from /etc/shells and optionally from qingy's sessions
+#---------------------------------------------------------------------
+function remove_shell ()
+{
+  local qingy_session_dir="${INSTALL_ROOT}/etc/qingy/sessions"
+
+  if [ -z "$1" ] ; then
+    message "${PROBLEM_COLOR}no shell name specified, aborting${DEFAULT_COLOR}"
+    return 1
+  fi &&
+  if [ -z "$2" ] ; then
+    message "${PROBLEM_COLOR}no shell path specified, aborting${DEFAULT_COLOR}"
+    return 1
+  fi &&
+
+  #removing shell from /etc/shells
+  if  [  -f  /etc/shells  ]  ;  then
+    sedit "\:^$2$:d"  /etc/shells
+  fi
+
+  # and optionally from qingy's session dir
+  if [ -f ${qingy_session_dir}/$1 ] ; then
+    message "removing $1 from $qingy_session_dir"
+    rm -f ${qingy_session_dir}/$1
+  fi
+}
+
+
+#---------------------------------------------------------------------
+## replacement for config_query_string to work around a short timeout
+## when entering long strings (hostnames, organisation names)
+#---------------------------------------------------------------------
+function config_query_long_string() {
+    local ANSWER
+    local DELAY=5 
+    if config_get_option "$1" ANSWER; then
+        # option allready answered in config
+        echo -e "[[ ${QUERY_COLOR}$2${DEFAULT} -> '${QUERY_COLOR}$ANSWER${DEFAULT}' ]]"
+    else
+        query_string ANSWER "$2" "$3"
+        read -t $DELAY -n 1 ANSWER_first
+        if [[ $ANSWER_first ]] ; then 
+          read ANSWER_rest
+        fi
+        ANSWER="${ANSWER_first}${ANSWER_rest}"
+        config_set_option "$1" "$ANSWER"
+    fi
+    return 0
+}
+
+
+#---------------------------------------------------------------------
+#
+## Returns the location that the www files are installed to
+## An attempt to get install_www_files configurable
+#---------------------------------------------------------------------
+function get_install_www_files_dir ()
+{
+  echo "/usr/share/www/"
+}
+
+
+#---------------------------------------------------------------------
+## @param Directory with files we might want to install
+## @param Destination directory (optional)
+##
+## Installs files to WWW_DEST ($INSTALL_ROOT/usr/share/www/$SPELL-$VERSION) and
+## sets up proper www-data permissions
+## Optionally the second parameter will override WWW_DATA (and make
+## sure INSTALL_ROOT exists only once in the WWW_DATA)
+#---------------------------------------------------------------------
+function  install_www_files ()
+{
+  if  [  !  -z  $2  ];  then
+    #
+    # Just in case the destination already includes INSTALL_ROOT, remove it
+    #
+    local  WWW_DEST="$INSTALL_ROOT/${2/\$INSTALL_ROOT/}"
+  else
+    local  WWW_DEST="$INSTALL_ROOT$(get_install_www_files_dir)$SPELL-$VERSION"
+  fi  &&
+
+  #
+  # Make sure the www-data user exists
+  # Not sure if this will work :/
+  create_account www-data
+
+  #
+  # Make sure WWW_DEST exists
+  #
+  if  [  !  -d  "$WWW_DEST"  ];  then
+    if  [  !  -d  "${WWW_DEST/\/$SPELL-$VERSION/}"  ];  then
+      mkdir  -p  "${WWW_DEST/\/$SPELL-$VERSION/}"                   &&
+      chmod  0755                 "${WWW_DEST/\/$SPELL-$VERSION/}"  &&
+      chown  www-data:www-data    "${WWW_DEST/\/$SPELL-$VERSION/}"
+    fi  &&
+
+    mkdir  -p  "$WWW_DEST"                   &&
+    chmod  0755                 "$WWW_DEST"  &&
+    chown  www-data:www-data    "$WWW_DEST"
+  fi  &&
+
+  # find $@ | while read file; do install ... $file ...; done
+  # find  $1  -type  -f  |  while  read  file;  do
+  for  www_file  in  `find  $1  -type  f`;  do
+    if  install_config_file  "$www_file"   "$WWW_DEST/$www_file";  then
+      chmod  u+r,g+r,o-wx         "$WWW_DEST/$www_file"  &&
+      chown  www-data:www-data    "$WWW_DEST/$www_file"
+    fi
+  done
+  #
+  # Warning message about new location for www files
+  # Remove around 2005-08-02 (one month in test, another in stable, supposedly)
+  #
+  message  "${MESSAGE_COLOR}Your web files have been moved out of the"        \
+           "APACHE specific locations (apache2/htdocs, httpd/htdocs, etc.)"   \
+           "and into a shared, non-DocumentRoot $INSTALL_ROOT$(get_install_www_files_dir)"  \
+           "directory. You can modify your web server to point there for"     \
+           "these files now.${DEFAULT_COLOR}"
+}
+
+#---------------------------------------------------------------------
+## Apply patches from a directory
+#---------------------------------------------------------------------
+function apply_patch_dir() {
+  [ -d "$SPELL_DIRECTORY/$1" ] || return 0
+  find "$SPELL_DIRECTORY/$1" \( -name \*.patch -o -name \*.diff \) -print0 |
+  sort -zV | xargs -0 -n 1 -t patch -fp1 -i
+}
+
+#---------------------------------------------------------------------
+## Removes traces of NSPR and NSS from Mozilla-based software
+## TODO move patch to a central place
+#---------------------------------------------------------------------
+function mozilla_remove_nspr_nss() {
+  message 'Checking Mozilla source code...' &&
+  [[ "$(basename $(pwd))" == mozilla ]] &&
+  message 'Checking the spell...' &&
+  if  [[ -f $SCRIPT_DIRECTORY/security_manager_makefile.diff ]];  then
+    patch -p1 < $SCRIPT_DIRECTORY/security_manager_makefile.diff
+  else
+    true  # No security patch needed
+  fi  &&
+  rm -fr dbm nsprpub security/nss &&
+  # exclude DBM for top-level modules and don't build it
+  sedit 's@\<dbm\>@@g' Makefile.in &&
+  sedit 's@\<dbm\>@@g' build/unix/modules.mk &&
+  # don't define NSS libraries as dependencies and don't look for them in the tree
+  sedit 's@$(DIST)/lib/$(LIB_PREFIX)\(crmf\|dbm\|nss3\|softokn3\|smime3\|ssl3\)\.$(LIB_SUFFIX)@-l\1@g' config/config.mk &&
+  sedit 's@NSS_DEP_LIBS\s*=@__undefine_\0@g' config/config.mk &&
+  # align the makefile-s
+  find -name Makefile.in | while read __MAKEFILE; do
+    # use system NSPR's and NSS's headers
+    # option `--with-system-nspr' doesn't do it everywhere
+    sedit 's@-I\S*\(nss\|nspr\)\>@-I/usr/include/\1@g' $__MAKEFILE
+  done
+}
+
+#-------------------------------------------------------------------------
+## Returns the kernel version checks linux then linux-new (for now) and
+## then uname for the kernel version
+#-------------------------------------------------------------------------
+function get_kernel_version()
+{
+  local KVER=$(installed_version linux)
+  if [[ $KVER ]] ; then
+    echo $KVER
+  else
+    KVER=$(installed_version linux-new)
+    if [[ $KVER ]] ; then
+      echo $KVER
+    else
+      KVER=$(grep version /usr/src/linux/.config | cut -d: -f2 | cut -d ' ' -f2)
+      if [ $KVER ] && [ -d "/lib/modules/${KVER}/build" ] ; then
+         echo $KVER
+      else
+        KVER=$(uname -r)
+        echo $KVER
+      fi
+    fi
+  fi
+}
+
+#---------------------------------------------------------------------------
+## Invokes the unamechange spell any spell that uses this should depend on
+## unamechange otherwise this function does nothing.
+## to use this function simply call then change the variables listed ro have
+## any call to uname return that value
+#--------------------------------------------------------------------------
+function invoke_uname_change()
+{
+  if [[ $(installed_version unamechange) ]] ; then
+    export UNAME_CHANGE_SYSNAME=$(uname -s)
+    export UNAME_CHANGE_NODENAME=$(uname -n)
+    export UNAME_CHANGE_RELEASE=$(uname -r)
+    export UNAME_CHANGE_VERSION=$(uname -v)
+    export UNAME_CHANGE_MACHINE=$(uname -m)
+    export UNAME_CHANGE_DOMAINNAME=$(uname -o)
+
+    export LD_PRELOAD="${LD_PRELOAD} /usr/lib/unamechange.so"
+  fi
+}
+
+#-------------------------------------------------------------------------
+## Returns the state of the system back to normal after calling 
+## invoke_uname_change unset's all environmental vars and returns
+## LD_PRELOAD back to normal
+#-------------------------------------------------------------------------
+function devoke_uname_change()
+{
+  if [[ $(installed_version unamechange) ]] ; then
+    unset UNAME_CHANGE_SYSNAME
+    unset UNAME_CHANGE_NODENAME
+    unset UNAME_CHANGE_RELEASE
+    unset UNAME_CHANGE_VERSION
+    unset UNAME_CHANGE_MACHINE
+    unset UNAME_CHANGE_DOMAINNAME
+
+    export LD_PRELOAD="${LD_PRELOAD/\/usr\/lib\/unamechange.so/}"
+  fi
+}
+
+#-----------------------------------------------------------------------
+## Get the kernel config status of the kernel option specified by $2.
+## Kernel version is given by $1.
+## 
+## If a configure file is found print the requested config status (if
+## any) and return 0, otherwise return 1.
+##-----------------------------------------------------------------------
+function get_kernel_config_ver()
+{
+  local i
+  for i in /proc/config /boot/config-"$1" /lib/modules/"$1"/build/.config
+  do
+    if [ -f "$i" ]; then
+      cat "$i" && break
+    elif [ -f "$i.gz" ]; then
+      zcat "$i.gz" && break
+    elif [ -f "$i.bz2" ]; then
+      bzcat "$i.bz2" && break
+    elif [ -f "$i.xz" ]; then
+      xzcat "$i.xz" && break
+    elif [ -f "$i.lzma" ]; then
+      xzcat "$i.lzma" && break
+    fi
+  done | grep "^$2=" | awk -F= '{ if ($2) { print $2 }; exit (!$2) }'
+}
+
+#-----------------------------------------------------------------------
+## Get the running kernel config status of the running kernel option
+## given by $1.
+##
+## See also: get_specified_kernel_config
+#-----------------------------------------------------------------------
+function get_running_kernel_config()
+{
+  get_kernel_config_ver $(get_running_kernel_version) "$1"
+}
+
+#-------------------------------------------------------------------------
+## Get the config status of some part of the kernel sorcery says is 
+## installed. Used by spells that have linux triggers.
+##
+## $1 string Config var to look for
+#-------------------------------------------------------------------------
+function get_sorcery_kernel_config()
+{
+  get_kernel_config_ver $(get_kernel_version) || echo "-1"
+}
+
+
+#-------------------------------------------------------------------------
+## Compatibility code for gracefully failing if the user uses an older
+## version of sorcery with a spell that calls unpack_file.
+#-------------------------------------------------------------------------
+declare -f unpack_file &> /dev/null ||
+function unpack_file() {
+  message "This spell uses a function only available in sorcery 1.12.2 or newer, please update."
+  return 1
+}
+
+#-------------------------------------------------------------------------
+## Default build for Python2 spell.
+#-------------------------------------------------------------------------
+function default_build_python() {
+  python2 setup.py build "$@"
+}
+
+#-------------------------------------------------------------------------
+## Default build for Python 3 spell.
+#-------------------------------------------------------------------------
+function default_build_python3() {
+  python3 setup.py build "$@"
+}
+
+#-------------------------------------------------------------------------
+## Default install for Python spell.
+#-------------------------------------------------------------------------
+function default_install_python() {
+  python2 setup.py install --root "$INSTALL_ROOT/" "$@"
+}
+
+#-------------------------------------------------------------------------
+## Default install for Python 3 spell.
+#-------------------------------------------------------------------------
+function default_install_python3() {
+  python3 setup.py install --root "$INSTALL_ROOT/" "$@"
+}
+
+#-------------------------------------------------------------------------
+## Default build for Perl spell.
+#-------------------------------------------------------------------------
+function default_build_perl() {
+  perl Makefile.PL $OPTS &&
+  make
+}
+
+#---
+## disable_pic
+## A function to smartly disable -DPIC and -fPIC flags
+## has one optional parameter: force which forces disable
+#---
+
+disable_pic() {
+  if [[ "${SMGL_COMPAT_ARCHS[1]}" != "x86_64" ]] &&
+     [[ "${SMGL_COMPAT_ARCHS[1]}" != "alpha"  ]] ||
+     [[ "$1" == "force" ]]
+  then
+    CFLAGS=${CFLAGS//-fPIC}                    &&
+    CFLAGS=${CFLAGS//-DPIC}                    &&
+    CXXFLAGS=${CXXFLAGS//-fPIC}                &&
+    CXXFLAGS=${CXXFLAGS//-DPIC}
+  fi
+}
+
+# FUnction to tag config files that cannot be tagged by the normal install_config_file method
+# do NOT call check_if_modified or mark_file_modified ANYWHERE ELSE!!!
+# # THIS function will go away when it migrates down from devel sorcery
+# # David Kowis - 11-17-2006
+#  $1 is the full path to the config file you want tracked.
+#  CALL THIS BEFORE YOU DO THE INSTALLING. You can see the postfix spell for an example.
+declare -f note_config_files &>/dev/null ||
+function note_config_files() {
+  if check_if_modified "$1"; then 
+    mark_file_modified "$1" 
+  fi
+}
+
+# Functions for default_build and default_install for waf based build systems
+# please use this one instead of maunaly calling waf when possible
+# Disabled caching as this has GREAT potential for borkage
+# and waf is fast without it as well
+# The waf disables options between versions and bails out if they are given,
+# so check first if they are supported..
+
+function waf_build() {
+  local waf_opts="--prefix=$INSTALL_ROOT/usr"
+  # Some waf not know man, waf angry with man.
+  if ./waf --help | grep -q -- --mandir; then
+    waf_opts="$waf_opts --mandir=$INSTALL_ROOT/usr/share/man"
+  fi
+  # Same with some other options.
+  if ./waf --help | grep -q -- --nocache; then
+    waf_opts="$waf_opts --nocache"
+  fi
+  if ./waf --help | grep -q -- --cxxflags=CXXFLAGS; then
+    # Hack added for guitarix, maybe useful for others, too.
+    # Needed to be able to enable C++11 mode. We hope to be able
+    # Slip in something here. Full control ist still in waf's hands and
+    # it probably will add flags as it wants:-/
+    ./waf configure $waf_opts \
+      -j $MAKE_NJOBS \
+      --cxxflags="$CXXFLAGS" \
+      $OPTS
+  else
+     ./waf configure $waf_opts \
+       -j $MAKE_NJOBS \
+       $OPTS
+  fi &&
+  ./waf build
+}
+
+function waf_install() {
+  ./waf install
+}
+
+# spells in several  sections now need cmake or qt4
+cmake_build() {
+  mkdir -p build        &&
+  cd build              &&
+  prepare_cmake_flags   &&
+  if [[ $CMAKE_GEN == Ninja ]];then
+    MAKE=ninja
+    OPTS+=" -G Ninja"
+  else
+    MAKE=make
+  fi &&
+
+  if [[ -z $1 ]];then
+    CMAKE_INSTALL_PREFIX="$INSTALL_ROOT/usr"
+  else
+    CMAKE_INSTALL_PREFIX="$1"
+  fi &&
+
+  message INSTALL_PREFIX=$CMAKE_INSTALL_PREFIX &&
+
+  cmake -DCMAKE_INSTALL_PREFIX=$CMAKE_INSTALL_PREFIX \
+        -DCMAKE_INSTALL_DATADIR=share \
+        -DCMAKE_INSTALL_DOCDIR=share/doc \
+        -DCMAKE_INSTALL_INCLUDEDIR=include \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_INSTALL_MANDIR=share/man \
+        -DCMAKE_PREFIX_PATH=share/apps/cmake/modules \
+        -DCMAKE_INSTALL_SYSCONFDIR=$INSTALL_ROOT/etc \
+        -DCMAKE_BUILD_TYPE=$CM_BUILD_TYPE \
+        -DCMAKE_C_FLAGS_RELEASE="$CFLAGS" \
+        -DCMAKE_CXX_FLAGS_RELEASE="$CXXFLAGS" \
+         $OPTS ../  &&
+  $MAKE
+}
+
+function cmake_install() {
+  if [[ $CMAKE_GEN == Ninja ]];then
+    ninja install
+  else
+    make install
+  fi
+}
+
+qt4_cmake_build() {
+  PATH="$QT4DIR/bin/:$PATH"
+  export PKG_CONFIG_PATH="$QT4DIR/lib/pkgconfig"
+  cmake_build $QT4DIR
+}
+
+qt4_build() {
+  PATH="$QT4DIR/bin:$PATH"
+  qmake PREFIX=$QT4DIR $OPTS *.pro &&
+  make
+}
+
+# cmake flags use : which is an internal sorcery delimiter.
+# In order to facilitate the passing of depends flags, use % instead and call
+# this function at the start of BUILD. Don't use it anywhere else.
+# Example: 
+# DEPENDS: depends kdelibs4 -DCRUFT%BOOL=FALSE; ...
+# BUILD: prepare_cmake_flags; ...
+function prepare_cmake_flags()
+{
+  OPTS="${OPTS//%/:}"
+}
+
+
+#-------------------------------------------------------------------------
+## Print the version of the running kernel.
+#-------------------------------------------------------------------------
+function get_running_kernel_version()
+{
+  # Try the proc interface first because it returns the version of the
+  # running kernel even when unamechange is invoked.
+  [[ -f /proc/sys/kernel/osrelease ]] && cat /proc/sys/kernel/osrelease ||
+    uname -r
+}
+
+#-------------------------------------------------------------------------
+## Print the version of the installed linux spell or, lacking that, "-1".
+## This is just a wrapper for 'installed_version linux' with the exception
+## that this will always print something and not return false.
+#-------------------------------------------------------------------------
+function get_sorcery_kernel_version()
+{
+  installed_version linux || echo "-1"
+}
+
+#-----------------------------------------------------------------------
+## Print the kernel config status of the installed linux spell for the 
+## option defined in $1.
+## If the linux spell is installed and a configure file is found print
+## the requested config status (if any) and return 0, otherwise return
+## 1.
+#-----------------------------------------------------------------------
+function get_sorcery_kernel_config()
+{
+  local KVER="$(installed_version linux)"
+  if [[ $KVER ]]
+  then
+    get_kernel_config_ver "$KVER" "$1"
+  else
+    return 1
+  fi
+}
+
+#-----------------------------------------------------------------------
+## Print the kernel config status for the option defined in $1 from the
+## kernel defined in USE_KERNEL_VERSION or, lacking that, from either
+## the installed linux spell or the running kernel.
+## If a configure file is found print the requested config status (if
+## any) and return 0, otherwise return 1.
+#-----------------------------------------------------------------------
+function get_kernel_config()
+{
+  if [[ $USE_KERNEL_VERSION ]]
+  then
+    get_kernel_config_ver "$USE_KERNEL_VERSION" "$1"
+  else
+    get_sorcery_kernel_config "$1" || get_running_kernel_config "$1"
+  fi
+}
+
+#---
+## Select SCM branch. If no parameter is given, it assumes a single scm branch.
+##
+## Saves selected branch in ${SPELL}_BRANCH, and auto-update setting on
+## ${SPELL}_AUTOUPDATE.
+##
+## Usage:
+##   . ${GRIMOIRE}/FUNCTIONS &&
+##   prepare_select_branch [branch] ...
+#---
+function prepare_select_branch() {
+  local spell=$(get_up_spell_name) &&
+  local branch="$spell"_BRANCH &&
+
+  if [[ $# > 1 ]]; then
+    config_query_list $branch "Select one of the available branches:" "$@"
+  else
+    eval $branch=\""${1:-scm}"\"
+  fi &&
+
+  if [[ "${!branch/-*}" = scm ]]; then
+    config_query "$spell"_AUTOUPDATE 'Automatically update on every system update?' n
+  fi
+}
+
+#---
+## Get uppercase spell name with _ instead of -
+#---
+function get_up_spell_name() {
+  echo ${1:-$SPELL} | tr '.+a-z-' '_XA-Z_'
+}
+
+#---
+## Get branch-based/autoupdate-aware version number
+#---
+function get_scm_version() {
+  local spell=$(get_up_spell_name) &&
+  local spell_branch="${spell}_BRANCH" &&
+  local spell_autoupdate="${spell}_AUTOUPDATE" &&
+  if [ "${!spell_autoupdate}" = "y" ]; then
+      echo $(date "+%Y%m%d")
+  else
+      echo ${!spell_branch:-scm}
+  fi
+}
+
+# Move SPELL_OPTS to OPTS
+# basicly generic OPTS="$SPELL_OPTS $OPTS"
+function prepare_opts() {
+  # this is here so that config_query_option can be used without
+  # extra junk
+  local up_spell_name=$(get_up_spell_name)     &&
+  local tempopts="${up_spell_name}_OPTS"                  &&
+  OPTS="${!tempopts} $OPTS"
+}
+
+#---
+## Default configure
+#---
+
+function default_build_configure() {
+  prepare_opts                                            &&
+  OPTS="$OPTS --build=${BUILD}"                           &&
+  #If these switches are used, they _may_ stop distcc and ccache from working
+  # for some spells (bug 3798)
+  #  We could write wrappers for all of the possible binaries
+  [[ $CROSS_INSTALL == on ]] && OPTS="$OPTS --host=${HOST}"
+
+  ./configure --prefix=${INSTALL_ROOT}/usr                 \
+          --sysconfdir=${INSTALL_ROOT}/etc                 \
+       --localstatedir=${INSTALL_ROOT}/var                 \
+              --mandir=${INSTALL_ROOT}/usr/share/man       \
+             --infodir=${INSTALL_ROOT}/usr/share/info      \
+                       $OPTS
+}
+
+#---
+## Default make
+#---
+
+function default_build_make(){
+  make
+}
+
+#---
+## Compare if one version is less than another (uses sort from coreutils)
+#---
+function is_version_less() {
+  [ ! $(echo -e "$1\n$2" | sort --version-sort | head -1) = "$2" ]
+}
+
+#---
+## Check if a version is between two others. The range is inclusive.
+## @param $1 - first bound
+## @param $2 - version that may be in between
+## @param $3 - second bound
+#---
+function is_version_between() {
+  # First check if the boundaries have been hit.
+  [[ "$1" == "$2" ]] && return
+  [[ "$2" == "$3" ]] && return
+  # Check both ascending and descending order.
+  # If $1 and $3 are equal, there cannot be anything in between.
+  if is_version_less "$1" "$3"; then
+    is_version_less "$1" "$2" &&
+    is_version_less "$2" "$3"
+  else
+    is_version_less "$3" "$2" &&
+    is_version_less "$3" "$1"
+  fi
+}
+
+#---
+## Check sanity of a temporary partition
+## @param $1 - the partition to check for
+#---
+function check_tmp_noexec() {
+  if [[ -z $1 ]]; then
+    message "${PROBLEM_COLOR}Partition name cannot be empty${DEFAULT_COLOR}" &&
+    return 1
+  fi &&
+
+  if ! mountpoint -q $1; then
+    message "${MESSAGE_COLOR}There's no $1 mount point, nothing to check.${DEFAULT_COLOR}"
+    return 0
+  fi &&
+
+  if awk -v tmp=$1 '{ if ($2 == tmp) print $4 }' < /proc/mounts | grep -q noexec; then
+    message -n "${MESSAGE_COLOR}Remounting $1 with exec option (required for build)... " &&
+    mount -o exec,remount $1 &&
+    message "done${DEFAULT_COLOR}"
+  elif awk -v tmp=$1 '{ if ($2 == tmp) print $4 }' < /etc/fstab | grep -q noexec; then
+    message -n "${MESSAGE_COLOR}Restoring $1 mount options... " &&
+    mount -o noexec,remount $1 &&
+    message "done${DEFAULT_COLOR}"
+  fi
+}
+
+#---
+## Simple version check with force depends
+## @params $1 - the spell to check the version of
+## @params $2 - the simple version to check against
+##              (if proper is 2.1.0 then this is 210)
+## @params $3 - how many digits to compare against from left to right
+##              defaults to 99 digits
+#---
+function simple_version_check_force_depends(){
+if spell_ok $1 &&
+   [[ $(installed_version $1|sed -e 's:^0\.::' -e 's:\.::g' | cut -c-${3:=99}) -lt $2 ]]
+  then
+    force_depends $1
+fi
+}
+
+#---
+## Find a file matching some pattern(s) as installed by the chosen
+## provider, e.g. /usr/bin/python3 for python3 providing PYTHON.
+## @params $1 - spell at hand
+## @params $2 - provider name (PYTHON)
+## @params $3 - expression for grep
+#---
+function get_spell_provider_file(){
+  gaze install $(get_spell_provider "$1" "$2") \
+  | grep "$3" | sort | head -n 1
+}
+
+
+#---
+## Trigger checks on dependent spells. Used after checking if
+## an incompatible update is scheduled.
+## @params $1 - spell at hand
+#---
+function check_dependents()
+{
+  local spell=$1; shift
+  message "${MESSAGE_COLOR}This is a possibly incompatible update of $spell." &&
+  message "Figuring out what spells need to be checked for sanity...${DEFAULT_COLOR}" &&
+  for each in $(show_up_depends "$spell" 1); do
+    up_trigger $each check_self
+  done
+}
+
+#---
+## Trigger check_self on spells depending on the one at hand if it
+## is being updated from an old version.
+## Purpose of the optional version filter  parameters is to limit the
+## triggering to cases of significant difference, like 1.2.x -> 1.3.y instead of
+## the smaller difference 1.2.x -> 1.2.y .
+## @params $1 - spell at hand
+## @params $2 - new version
+## @params $3 - command to filter versions with
+## @params $4 - and following: arguments to the filter command
+##
+## Example: check_dependents_on_update $SPELL $VERSION cut -d . -f 1,2
+## This will compare only x.y out of version x.y.z-betaY.
+#---
+function check_dependents_on_update()
+{
+  local   spell=$1; shift;
+  local version=$1; shift;
+  if spell_ok $spell; then
+    local old_version=$(installed_version $spell)
+    local new_version=$version
+    if [[ $# -gt 0 ]]; then
+      old_version=$(echo "$old_version" | "$@")
+      new_version=$(echo "$new_version" | "$@")
+    fi &&
+    if [[ "$new_version" != "$old_version" ]]; then
+      check_dependents "$spell"
+    fi
+  fi
+}
+
+#---
+## Trigger check_self on a certain version jump (known ABI breakage).
+## You know that a spell changed ABI most recently in version x, so you
+## provide this version and the function checks if updating the spell
+## crosses version x and hence dependers shall be triggered.
+## @params $1 - spell at hand
+## @params $2 - new version to be installed
+## @params $3 - version of last ABI breakage
+#---
+function check_dependents_versionjump()
+{
+  local   spell=$1; shift;
+  local version=$1; shift;
+  local breaker;
+  if spell_ok "$spell"; then
+    local old_version=$(installed_version "$spell")
+    [[ "$old_version" == "$version" ]] && return
+    # Now, if the versions differ, check if the breaking version is crossed.
+    for breaker in "$@"; do
+      if is_version_between "$old_version" "$breaker" "$version"; then
+        check_dependents "$spell"
+        return
+      fi
+    done
+  fi
+}
+
+#---
+
+. $GRIMOIRE/glselect.function
+. $GRIMOIRE/bzr_download.function
+. $GRIMOIRE/hg_download.function
+
+
+# some spells need lots of disk space
+# chk_space looks for $1 GB
+chk_space() {
+SPACE=`df --output=avail,target -l -BG|grep " /$" |cut -dG -f1 |sed "s/ //g"`
+if [[ $SPACE -lt "$1" ]];then
+  echo "${PROBLEM_COLOR}insufficient space on root device. $SPELL requires >= $1 GB${DEFAULT_COLOR}"
+  return 1
+fi
+return 0
+}

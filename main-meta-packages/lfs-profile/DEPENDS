@@ -1,0 +1,6 @@
+depends bin-utils &&
+depends gcc &&
+depends linux &&
+depends glibc &&
+depends tcl &&
+depends systmd

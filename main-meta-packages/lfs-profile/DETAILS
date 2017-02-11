@@ -1,0 +1,16 @@
+           SPELL=lfs-profile
+         VERSION=7.1.0
+      PATCHLEVEL=1
+        WEB_SITE=http://www.linuxfromscratch.org/
+         ENTERED=20170208
+        NO_CACHE="--cache=off"
+    VIEW_REPORTS="off"
+           SOUND="off"
+         ARCHIVE="off"
+     GATHER_DOCS="off"
+      LICENSE[0]=GPL
+           SHORT="Bare minimum Linux From Scratch Spells."
+cat << EOF
+The base Source Mage set of spells. These are for basic functioning
+and are also required for sorcery to run properly.
+EOF

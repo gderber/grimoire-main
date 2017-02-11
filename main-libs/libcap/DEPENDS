@@ -1,0 +1,9 @@
+optional_depends attr \
+                 "LIBATTR=yes" \
+                 "LIBATTR=no" \
+                 "for extended attributes support" &&
+
+optional_depends linux-pam \
+                 "LIBCAP_PAM=yes" \
+                 "LIBCAP_PAM=no" \
+                 "for capabilities PAM module"

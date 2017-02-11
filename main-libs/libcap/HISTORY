@@ -1,0 +1,127 @@
+2016-04-21 Vlad Glagolev <stealth@sourcemage.org>
+	* DETAILS: updated spell to 2.25
+	* BUILD: use $OPTS
+	* DEPENDS: made attr actually optional; rewritten
+	* CONFIGURE: dropped deprecated persistent var
+	* INSTALL: added, to use OPTS
+	* CONFLICTS: added, for proper upgrading procedure for =2.25
+
+2014-04-12 Treeve Jelbert <treeve@sourcemage.org>
+	* DETAILS: version 2.24
+	* PRE_BUILD, INSTALL, *.patch: deleted
+	* BUILD: simplify
+	  builds & installs without PAM on amd64, linux 3.14.0
+
+2011-07-28 Ladislav Hagara <hgr@vabo.cz>
+	* DETAILS: 2.22
+
+2011-05-04 Ladislav Hagara <hgr@vabo.cz>
+	* DETAILS: 2.21
+
+2011-01-28 Bor Kraljič <pyrobor@ver.si>
+	* libcap-2.20-ignore-RAISE_SETFCAP-install-failures.patch: added for install
+	  problem without linux-pam (bug #15932)
+
+2011-01-26 Ladislav Hagara <hgr@vabo.cz>
+	* DETAILS: 2.20
+
+2010-02-02 Ladislav Hagara <hgr@vabo.cz>
+	* DETAILS: 2.19, updated WEB_SITE
+
+2009-08-31 Ladislav Hagara <hgr@vabo.cz>
+	* DETAILS: 2.17
+
+2009-07-03 Ethan Grammatikidis <eekee57@fastmail.fm>
+	* INSTALL: install libs, progs to / NOT /usr, fixes bug #15120
+	* DETAILS: added PATCHLEVEL
+
+2009-03-25 Vlad Glagolev <stealth@sourcemage.org>
+	* PRE_BUILD: apply the patch
+	* types.patch: added, to fix compilation with new (>=2.6.29) linux kernel
+
+2009-03-23 Vlad Glagolev <stealth@sourcemage.org>
+	* DETAILS: updated spell to 2.16
+
+2008-12-05 Jaka Kranjc <lynxlynxlynx@sourcemage.org>
+	* UP_TRIGGERS: trigger only the first level deps #14781
+
+2008-11-18 Vlad Glagolev <stealth@sourcemage.org>
+	* PRE_BUILD: fixed indent removal for newer version
+
+2008-11-17 Ladislav Hagara <hgr@vabo.cz>
+	* DETAILS: 2.14
+
+2008-08-23 Thomas Orgis <sobukus@sourcemage.org>
+	* BUILD: added -L to CFLAGS (bug #14660) ... see a pattern there? ;-)
+
+2008-08-15 Elisamuel Resto <ryuji@sourcemage.org>
+	* BUILD: added -I to CFLAGS (bug #14583)
+
+2008-07-14 Pol Vinogradov <vin.public@gmail.com>
+	* DEPENDS: libcap 2.11 requires attr
+
+2008-07-11 Vlad Glagolev <stealth@sourcemage.org>
+	* DETAILS: updated spell to 2.11, quoting the paths!
+	* INSTALL: quoting the paths!
+	* PRE_BUILD: glibc fix no longer needed, quoting the paths!
+
+2008-06-15 Thomas Orgis <sobukus@sourcemage.org>
+	* DEPENDS, BUILD: enable disabling of PAM module, added PAM dependency
+
+2008-06-02 Ladislav Hagara <hgr@vabo.cz>
+	* DETAILS: 2.10
+
+2008-03-24 Eric Sandall <sandalle@sourcemage.org>
+	* UP_TRIGGERS: ${VERSION:0:3} only matches 2.0, not 2.08, use :0:4
+
+2008-03-23 Vlad Glagolev <stealth@Sourcemage.org>
+	* DETAILS: cleaned up
+	* PRE_BUILD: fixed the bug during compilation (about indent),
+	  simplified sed lines, fixed install prefix broken by update to 2.08
+
+2008-03-23 Treeve Jelbert <treeve@sourcemage.org>
+	* DETAILS: version 2.08
+	  this version supports both 2.4 and 2.6 kernels
+	* PRE_BUILD: added, fix glibc problem
+	* BUILD: move sedit to PRE_BUILD
+	* UP_TRIGGERS: added
+
+2007-08-18 Treeve Jelbert <treeve@sourcemage.org>
+	* DETAILS: use get_kernel_version
+	  works even if linux spell is not installed
+
+2007-08-14 Treeve Jelbert <treeve@sourcemage.org>
+	* DETAILS: version 1.97 / 1.10
+	  support 2.4 kernes as well
+
+2007-08-05 Treeve Jelbert <treeve@sourcemage.org>
+	* DETAILS: version 1.96
+	  convert to gpg check
+	  use version for 2.6 kernel
+
+2006-10-03 Juuso Alasuutari <iuso@sourcemage.org>
+	* DETAILS: [automated] Removed UPDATED.
+
+2006-09-21 Juuso Alasuutari <iuso@sourcemage.org>
+	* DETAILS: [automated] Removed BUILD_API=2.
+
+2006-04-11 Andraž "ruskie" Levstik <ruskie@mages.ath.cx:
+	* BUILD: replaced fPIC and DPIC removal code with disable_pic
+
+2006-03-12 Karsten Behrmann <BearPerson@sourcemage.org>
+	* DETAILS: (automated) Add KEYWORDS
+
+2005-11-29 Seth Woolley <seth@tautology.org>
+	* DETAILS: MD5 -> SHA512
+
+2005-06-11 Arwed v. Merkatz <v.merkatz@gmx.net>
+	* BUILD: disable PIC on non AMD64, fixes bug #9087
+
+2005-05-09 Seth Woolley <seth@tautology.org>
+	* BUILD: add use of optimizations.
+
+2004-08-26 Arwed v. Merkatz <v.merkatz@gmx.net>
+	* BUILD: converted to BUILD_API 2, install man pages to /usr/share/man
+
+2004-03-30 Seth Woolley <seth@tautology.org>
+	* DETAILS, BUILD: spell added, libcap-1.10

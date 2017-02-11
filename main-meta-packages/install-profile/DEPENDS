@@ -1,0 +1,38 @@
+depends basesystem &&
+depends linux &&  # Why is this not part of basesystem?
+
+# Filesystem Utils
+# Maybe add a way to remove filesystem utils
+# if that filesystem is not in use?
+depends dosfstools &&
+depends jfsutils   &&
+depends reiser4progs &&
+depends reiserfsprogs &&
+depends sysfsutils &&
+depends xfsprogs &&
+depends parted &&
+
+# Hardware related
+depends mdadm &&
+
+# SMGL
+#depends smgl-common &&
+depends smgl-setup  &&
+depends ed && # sorcery uses this for 'sed' all over, why not part of basesystem?
+
+# Why aren't these part of basesystem?
+depends man-pages  &&
+
+# Text editors
+# Again remove after initial install
+# if not in use?
+depends nano &&
+depends elvis &&
+
+
+
+# Other
+depends which # Why isn't this installed by default
+
+# Why are these installed?
+depends traceroute

@@ -1,0 +1,3 @@
+depends  DEVICE-MANAGER &&
+depends  flex       &&
+depends  sysfsutils

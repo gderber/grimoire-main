@@ -1,0 +1,18 @@
+           SPELL=ifupdown
+         VERSION=0.8.19
+      PATCHLEVEL=1
+          SOURCE=${SPELL}_$VERSION.tar.xz
+   SOURCE_URL[0]=http://http.debian.net/debian/pool/main/i/$SPELL/$SOURCE
+     SOURCE_HASH=sha512:05630b28622c6cf33e5e6c2576a55a8ea21ab1c4167c134c1e3dc1dac1123bc0f747cc220b41fdf5b26874c21d018f66ab4c1b9ee4d4eb70705ddc47ef93977b
+SOURCE_DIRECTORY="$BUILD_DIRECTORY/$SPELL"
+      LICENSE[0]=GPL
+        WEB_SITE=https://packages.debian.org/source/sid/ifupdown
+         ENTERED=20080123
+        KEYWORDS="tools net"
+           SHORT="Interface control tools"
+cat << EOF
+This package provides the tools ifup and ifdown which may be used to configure
+(or, respectively, deconfigure) network interfaces based on interface
+definitions in the file /etc/network/interfaces.
+EOF
+

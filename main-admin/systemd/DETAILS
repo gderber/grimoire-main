@@ -1,0 +1,39 @@
+           SPELL=systemd
+if [[ $SYSTEMD_VER == git ]]
+then
+         VERSION=git
+          SOURCE=$SPELL-$VERSION.tar.bz2
+   SOURCE_IGNORE=volatile
+   SOURCE_URL[0]=git_http://github.com/systemd/$SPELL.git
+  FORCE_DOWNLOAD=1
+else
+         VERSION=232
+  if [[ $SYSTEMD_VER == "git-stable" ]]
+  then
+         SOURCE=$SPELL-$VERSION.tar.bz2
+	 SOURCE_IGNORE=volatile
+	 SOURCE_URL[0]="git_http://github.com/$SPELL/$SPELL-stable.git:$SPELL-$VERSION:v$VERSION-stable"
+         FORCE_DOWNLOAD=1
+  else
+  	  SOURCE=v$VERSION.tar.gz
+     SOURCE_HASH=sha512:5dbe52f655ec2901b1bfbb1256f83ba26bc82c13097ac9a82e4fbb97886551530f9888c369592f1b410cfff40d6d127b985533a3e29cfab5b30d18739ee5dcb1
+   SOURCE_URL[0]=https://github.com/systemd/systemd/archive/$SOURCE
+   fi
+fi
+SOURCE_DIRECTORY=$BUILD_DIRECTORY/$SPELL-$VERSION
+        WEB_SITE=http://www.freedesktop.org/wiki/Software/systemd
+         ENTERED=20110406
+      LICENSE[0]=GPL
+           SHORT="systemd is a system and service manager for Linux"
+cat << EOF
+systemd is a system and service manager for Linux, compatible with SysV and LSB
+init scripts. systemd provides aggressive parallelization capabilities, uses
+socket and D-Bus activation for starting services, offers on-demand starting of
+daemons, keeps track of processes using Linux cgroups, supports snapshotting and
+restoring of the system state, maintains mount and automount points and
+implements an elaborate transactional dependency-based service control logic.
+It can work as a drop-in replacement for sysvinit.
+
+NOTE: you need your kernel built with devtmpfs, cgroups, and optionally, but
+recommended: autofs4 and ipv6.
+EOF

@@ -1,0 +1,4 @@
+#conflicts simpleinit-msb &&
+conflicts initng		 &&
+conflicts udev                   &&
+conflicts upstart
